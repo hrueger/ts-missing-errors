@@ -2,7 +2,27 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-function TestFunction(
+function testTypePayloadForPost(
+  post: Prisma.PostGetPayload<{
+    include: {
+      user: {
+        include: {
+          profile: {
+            select: {
+              description: true;
+            };
+          };
+        };
+      };
+    };
+  }>
+) {
+  if (post.user.profile !== null) {
+    console.log(post.user.profile.description);
+  }
+}
+
+function testTypePayloadForUser(
   user: Prisma.UserGetPayload<{
     include: {
       profile: {
@@ -13,25 +33,16 @@ function TestFunction(
     };
   }>
 ) {
-  // Here we would expect that IF the description does exist, it should
-  // contain a description... but it does not
   if (user.profile !== null) {
-    console.log(user.profile?.description);
+    console.log(user.profile.description);
   }
 }
 
 async function main() {
   // Clear db
-  await prisma.user.delete({
-    where: {
-      id: "1",
-    },
-  });
-  await prisma.profile.delete({
-    where: {
-      id: "1",
-    },
-  });
+  await prisma.user.deleteMany({});
+  await prisma.profile.deleteMany({});
+  await prisma.post.deleteMany({});
 
   // Create test user
   await prisma.user.create({
@@ -42,29 +53,45 @@ async function main() {
         create: {
           id: "1",
           age: 22,
+          description: "hello world",
         },
+      },
+      posts: {
+        create: [
+          {
+            id: "1",
+            title: "my post",
+            content: "my content",
+          },
+        ],
       },
     },
   });
 
-  const user = await prisma.user.findUnique({
+  const post = await prisma.post.findUnique({
     where: {
       id: "1",
     },
     include: {
-      profile: {
-        select: {
-          description: true,
+      user: {
+        include: {
+          profile: {
+            select: {},
+          },
         },
       },
     },
   });
-  if (user === null) {
+  if (post === null) {
     console.error("something went wrong");
     return;
   }
 
-  TestFunction(user);
+  // NO TS LINTING ERROR
+  testTypePayloadForPost(post);
+
+  // TS LINTING ERROR
+  testTypePayloadForUser(post.user);
 }
 
 main()

@@ -15,6 +15,7 @@ model User {
   name      String
   profileId String?
   profile   Profile? @relation(fields: [profileId], references: [id])
+  posts     Post[]
 }
 
 model Profile {
@@ -22,4 +23,12 @@ model Profile {
   description String?
   age         Int
   User        User[]
+}
+
+model Post {
+  id      String @id
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  title   String
+  content String
 }
