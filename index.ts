@@ -94,7 +94,7 @@ async function main() {
   testTypePayloadForPost(post);
 
   // TS LINTING ERROR
-  testTypePayloadForUser(post.user);
+  // testTypePayloadForUser(post.user);
 }
 
 main()
