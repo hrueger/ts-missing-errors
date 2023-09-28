@@ -76,7 +76,10 @@ async function main() {
       user: {
         include: {
           profile: {
-            select: {},
+            select: {
+              description: false,
+              age: true,
+            },
           },
         },
       },
